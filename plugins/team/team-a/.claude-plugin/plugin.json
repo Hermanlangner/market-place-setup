@@ -1,0 +1,6 @@
+{
+  "name": "team-a",
+  "version": "1.0.0",
+  "description": "Team A plugin. Depends on core-b with a semver constraint (^1.0).",
+  "dependencies": [{ "name": "core-b", "version": "^1.0" }]
+}

@@ -1,0 +1,6 @@
+{
+  "name": "core-a",
+  "version": "1.0.0",
+  "description": "Core plugin A. Depends on shared-a, which is auto-installed alongside it.",
+  "dependencies": ["shared-a"]
+}

@@ -1,0 +1,5 @@
+{
+  "name": "core-b",
+  "version": "1.0.0",
+  "description": "Core plugin B. No dependencies. team-a depends on this at ^1.0."
+}

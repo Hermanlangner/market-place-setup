@@ -1,0 +1,6 @@
+{
+  "name": "team-set",
+  "version": "1.0.0",
+  "description": "Bundle: the managed team set. Installs team-a, team-b, team-c; core-b arrives transitively via team-a.",
+  "dependencies": ["team-a", "team-b", "team-c"]
+}

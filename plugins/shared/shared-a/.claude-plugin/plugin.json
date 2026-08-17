@@ -1,0 +1,5 @@
+{
+  "name": "shared-a",
+  "version": "1.0.0",
+  "description": "Shared library A. Not meant to be installed directly - core-a depends on it and it arrives automatically."
+}
