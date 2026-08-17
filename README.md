@@ -7,6 +7,9 @@ category, with cross-plugin dependencies resolved automatically.
 All mechanics below verified locally on Claude Code v2.1.233.
 Governance (vetting public plugins, org lockdown) is covered at the end;
 org-wide distribution via claude.ai admin is in [ORG-DISTRIBUTION.md](ORG-DISTRIBUTION.md).
+New to the terminology? See [docs/agent-anatomy.md](docs/agent-anatomy.md)
+(visual: [docs/agent-anatomy.html](docs/agent-anatomy.html)) and the
+[concept-to-folder breakdown](docs/concepts-and-layout.md).
 
 ## Design
 
@@ -72,6 +75,21 @@ Then in a session: `ping team-a` → `🏓 pong from team-a v1.0.0`.
 Ping `core-b` too — proves the transitive dependency *loads*, not just installs.
 For the handpick flow, open `/plugin`, browse `acme`, search `team` / `medic`.
 
+Component types — `team-a` (v1.1.0) carries one of each, all replying with a
+`🏓` marker (see [docs/concepts-and-layout.md](docs/concepts-and-layout.md)):
+
+- **Skill**: say `ping team-a` → `🏓 pong from team-a v1.1.0`
+- **Sub agent**: say `use the team-a-pong agent` → the Agent tool spawns it,
+  it returns `🏓 pong from team-a sub agent v1.1.0`
+- **Hook + script**: start a *new* session after installing team-a → a
+  SessionStart hook runs `scripts/ping.sh` and its `🏓 pong from team-a script`
+  line appears in the session-start output
+- Verify what got discovered: `claude plugin details team-a@acme`
+  (expects 1 skill, 1 agent, 1 SessionStart hook)
+
+Hooks execute arbitrary commands on the user's machine — exactly the component
+the vetting review below exists for.
+
 Guard rails:
 
 ```bash
@@ -127,6 +145,8 @@ prompts. Cross-marketplace dependencies are blocked unless
 
 ### Enforce: managed settings (MDM)
 
+A policy file IT deploys to managed machines via MDM (Mobile Device Management —
+Jamf, Intune, Kandji, etc.), at
 `/Library/Application Support/ClaudeCode/managed-settings.json`:
 
 ```json
