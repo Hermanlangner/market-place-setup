@@ -1,7 +1,7 @@
 {
   "name": "acme",
   "owner": {
-    "name": "Herman Langner"
+    "name": "Acme"
   },
   "description": "Single-marketplace test bed: team sets as bundle plugins, handpicking via categories, cross-plugin dependencies.",
   "plugins": [

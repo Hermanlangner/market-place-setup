@@ -1,71 +1,76 @@
-# Concepts → disk: the breakdown and where everything lives
+# Concepts and disk layout
 
-Companion to [`agent-anatomy.md`](agent-anatomy.md). Two views: each concept as
-a table row, then the folder layout that carries them.
+Companion to [`agent-anatomy.md`](agent-anatomy.md). This reference maps each
+concept to runtime and disk, then shows the plugin, project, and user layouts.
 
-## The breakdown
+## Concept map
 
-| Concept | What it is | Lives on disk | Reaches the session how |
-|---|---|---|---|
-| **Harness** | Machinery around the model: loop, tool execution, permissions, context management | The `claude` binary itself (or your own build on the Agent SDK) | Is the session runtime |
-| **Claude Code** | One specific harness product (CLI, plugins, MCP, permission modes) | Installed CLI | — |
-| **Agent** | Model + harness + tools + instructions looping toward a goal | Nowhere — it's the *running* system | Every session is one |
-| **Tools & scripts** | How the agent acts: built-ins, your scripts/CLIs, MCP servers | Built-ins ship with the harness; scripts in `<plugin>/scripts/` or your repo; MCP configs in `plugin.json` / `.mcp.json` | Model calls them; results append to context |
-| **Skill** | Packaged know-how, loaded into context on demand | `<plugin>/skills/<name>/SKILL.md`, project `.claude/skills/`, user `~/.claude/skills/` | Pulled into context when relevant or via `/name` |
-| **Sub agent** | Fresh agent spawned as a tool call; own context, own tools; returns a report | `<plugin>/agents/<name>.md`, project `.claude/agents/` | Spawned via the Agent tool |
-| **Orchestration** | Coordination pattern over many agents: fan-out, pipeline, verify | Encoded in orchestrator agents/skills or workflow scripts (`.claude/workflows/`) | A pattern at runtime, not a component |
-| **Plugin** | Shipping container for skills, agents, hooks, MCP/LSP configs | `plugins/<group>/<name>/` in this repo | Installed from a marketplace |
-| **Marketplace** | Catalog that distributes plugins | `.claude-plugin/marketplace.json` at repo root | Added once (`marketplace add`) |
+| Concept | What it is | Location and session behavior |
+| --- | --- | --- |
+| **Harness** | Runtime around the model: loop, tool execution, permissions, and context management | The `claude` binary, or a build on the Agent software development kit (SDK). It provides the session runtime. |
+| **Claude Code** | A harness product with a CLI, plugins, Model Context Protocol (MCP), and permission modes | The installed CLI. It starts and runs the session. |
+| **Agent** | Model, harness, tools, context, and instructions running toward a goal | Runtime only, not a file. Each session is one. |
+| **Tools and scripts** | How the agent acts: built-ins, scripts and CLIs, and MCP servers | Built-ins ship with the harness; scripts live in `<plugin>/scripts/` or the repo; MCP configuration lives in `plugin.json` or `.mcp.json`. Results return to context. |
+| **Skill** | Packaged instructions loaded into context on demand | `<plugin>/skills/<name>/SKILL.md`, project `.claude/skills/`, or user `~/.claude/skills/`. Loaded when relevant or through `/name`. |
+| **Sub agent** | Fresh agent with separate context and tools that returns a report | `<plugin>/agents/<name>.md` or project `.claude/agents/`. Spawned through the Agent tool. |
+| **Orchestration** | Coordination pattern across agents: fan out, pipeline, or verify | Orchestrator agents or skills, or workflow scripts in `.claude/workflows/`. It is behavior, not a component. |
+| **Meta-harness** | External app that manages whole sessions: UI, parallel worktrees, review queues, and runtime integration | Its own app, outside this repo. It starts Claude Code in headless mode or through the Agent SDK. Claude Code plugins, skills, hooks, and telemetry continue to run. |
+| **Plugin** | Shipping container for skills, agents, hooks, and MCP or Language Server Protocol (LSP) configuration | `plugins/<group>/<name>/` in this repo. Installed from a marketplace. |
+| **Marketplace** | Catalog that distributes plugins | `.claude-plugin/marketplace.json` at the repo root. Added once with `marketplace add`. |
 
-Three scopes carry the same shapes — plugin (shipped via marketplace, this
-repo's concern), project (`.claude/` in a codebase, versioned with it), and
-user (`~/.claude/`, personal). Plugin wins for anything two teams should share.
+Skills and agents can use three scopes: plugin scope for marketplace-shipped
+shared assets, project scope in versioned `.claude/`, and user scope in personal
+`~/.claude/`. Use plugin scope when two teams should share an asset.
 
-## Folder layout
+## Repository layout
 
-What this repo looks like when a plugin carries every concept above —
-`team-a` is the live example (the other plugins are skills-only):
+This repo shows each file-backed plugin concept. `team-a` is the live example.
+The other non-bundle plugins contain skills only; bundle plugins contain only
+their manifests.
 
-```
-market-place-setup/                        ← MARKETPLACE (one per repo)
+```text
+market-place-setup/                        ← MARKETPLACE: one per repo
 ├── .claude-plugin/
-│   └── marketplace.json                   catalog: entries, categories, sources
+│   └── marketplace.json                   catalog entries, categories, sources
 ├── docs/
 │   ├── agent-anatomy.html                 the visual
-│   ├── agent-anatomy.md                   its markdown companion
+│   ├── agent-anatomy.md                   Markdown companion
 │   └── concepts-and-layout.md             this file
 ├── plugins/
-│   ├── shared/…  core/…  medic/…  bundles/…
+│   ├── shared/...
+│   ├── core/...
+│   ├── medic/...
+│   ├── bundles/...
 │   └── team/
-│       └── team-a/                        ← PLUGIN (shipping container)
+│       └── team-a/                        ← PLUGIN: shipping container
 │           ├── .claude-plugin/
 │           │   └── plugin.json            name, version, dependencies,
-│           │                              mcpServers / hooks config
-│           ├── skills/                    ← SKILLS (knowledge → context)
+│           │                              and hooks configuration
+│           ├── skills/                    ← SKILLS: knowledge into context
 │           │   └── ping/SKILL.md
-│           ├── agents/                    ← SUB AGENTS (delegation)
+│           ├── agents/                    ← SUB AGENTS: delegation
 │           │   └── pong.md                one .md per agent type; an agent
 │           │                              that coordinates other agents is
-│           │                              ORCHESTRATION — same file type
+│           │                              ORCHESTRATION, not a new file type
 │           ├── hooks/
-│           │   └── hooks.json             harness automation — this one runs
+│           │   └── hooks.json             harness automation; this one runs
 │           │                              scripts/ping.sh at SessionStart
-│           └── scripts/                   ← TOOLS & SCRIPTS (action)
-│               └── ping.sh                referenced by hooks/skills via
+│           └── scripts/                   ← TOOLS AND SCRIPTS: action
+│               └── ping.sh                referenced by the hook via
 │                                          ${CLAUDE_PLUGIN_ROOT}
 ├── README.md
 └── ORG-DISTRIBUTION.md
 ```
 
-And the two things that live outside this repo:
+Two scopes live outside this repo:
 
-```
-some-project/.claude/                      ← PROJECT scope (versioned with the code)
+```text
+some-project/.claude/                      ← PROJECT scope: versioned with the code
 ├── settings.json                          enabledPlugins, extraKnownMarketplaces
 ├── skills/  agents/  workflows/           project-specific variants
 └── CLAUDE.md                              standing context for every session
 
-~/.claude/                                 ← USER scope (personal)
+~/.claude/                                 ← USER scope: personal
 ├── settings.json                          global permissions, marketplaces
 ├── skills/  agents/
 └── plugins/cache/                         where installed plugins actually land
@@ -73,11 +78,12 @@ some-project/.claude/                      ← PROJECT scope (versioned with the
 
 ## Placement rules of thumb
 
-- **Two teams need it** → plugin in this repo, distributed via the marketplace.
-- **Only one codebase needs it** → that repo's `.claude/`.
-- **Only you need it** → `~/.claude/`.
-- **A skill needs code** → put the script in the plugin's `scripts/` and
-  reference it with `${CLAUDE_PLUGIN_ROOT}/scripts/…` — installed plugins are
-  copied to the cache, so relative paths outside the plugin break.
-- **An agent coordinates other agents** → it's still just an `agents/*.md`
-  file; orchestration is what it *does*, not a different file type.
+- Shared by two teams: use a plugin in this repo, distributed through the
+  marketplace.
+- Needed by one codebase: use that repo's `.claude/`.
+- Needed by one person: use `~/.claude/`.
+- A skill needs code: put the script in the plugin's `scripts/` and reference it
+  with `${CLAUDE_PLUGIN_ROOT}/scripts/...`. Installed plugins are copied to the
+  cache, so relative paths outside the plugin break.
+- An agent coordinates other agents: it remains an `agents/*.md` file.
+  Orchestration is behavior, not a different file type.

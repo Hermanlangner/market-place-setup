@@ -1,140 +1,150 @@
-# Org-wide distribution via claude.ai admin
+# Organization-wide distribution through claude.ai
 
-Team/Enterprise alternative to MDM (Mobile Device Management — Jamf/Intune-style
-device policy): an admin connects the marketplace once at
-[Organization settings → Plugins](https://claude.ai/admin-settings/plugins) and
-Anthropic's backend distributes it to every member — no device management, no
-user git access. Members get a **Browse plugins** modal in Claude Code;
-org-managed plugins can't be edited locally.
+Team and Enterprise admins can distribute this marketplace without MDM (Mobile
+Device Management tools such as Jamf or Intune). Connect it once in
+[Organization settings → Plugins](https://claude.ai/admin-settings/plugins),
+and Anthropic distributes the plugins to members. Members need no repository
+access, can browse permitted plugins in Claude Code, and cannot edit
+organization-managed plugins locally.
 
-Requires: Team/Enterprise plan, Owner/Primary Owner role, Cowork + Skills enabled.
-Docs: [plugin-marketplaces](https://code.claude.com/docs/en/plugin-marketplaces),
-[admin guide](https://support.claude.com/en/articles/13837433).
+Requirements: a Team or Enterprise plan, an Owner or Primary Owner role, and
+Cowork + Skills enabled.
 
-## Connecting
+References: [Plugin marketplaces](https://code.claude.com/docs/en/plugin-marketplaces)
+and the [admin guide](https://support.claude.com/en/articles/13837433).
 
-| Method | How | Limits |
-|---|---|---|
-| **GitHub sync** | Connect a **private/internal** repo (`owner/repo`), read via the Claude GitHub App (or GHE App). Initial sync is automatic. | 500 plugins |
-| **Manual upload** | ZIP per plugin. | 50 MB/ZIP, 100 plugins |
+## Connect the marketplace
 
-Note the inversion: self-service `marketplace add` needs a repo the *user* can
-reach; the org route **refuses public marketplace repos**.
+| Method | Process | Limits |
+| --- | --- | --- |
+| **GitHub sync** | Connect a private or internal repository (`owner/repo`) through the Claude GitHub App or GHE App. Initial sync is automatic. | 500 plugins |
+| **Manual upload** | Upload one ZIP per plugin. | 50 MB per ZIP; 100 plugins |
 
-## Source rules (and why)
+Unlike self-service `marketplace add`, which requires each user to access the
+repository, organization settings reject public marketplace repositories.
 
-Sync runs server-side **without anyone's git credentials** — it can only read
-what the GitHub App is installed on. Hence:
+## Meet the source requirements
 
-- Plugin sources: `github`, `url`, `git-subdir`, or relative paths only.
-  No `npm` / `archive` / `command`.
-- A source may be **private** only if it's github.com under the **same owner**
-  as the marketplace repo, or on your GHE host with the App installed.
-  Everything else is fetched anonymously → must be public (incl. all
-  GitLab/Bitbucket sources).
-- Escape hatch for private code: **relative paths inside the marketplace repo**.
-  Sync packages each plugin at distribution time, so members need zero repo
-  access.
+Organization sync runs without user Git credentials. It can access only
+repositories exposed to the installed GitHub App.
 
-This repo is already all-relative, so nothing to change. Watch out only for
-future sha-pinned `vetted-external` entries (README → Vetting): upstream must be
-public or same-owner, else vendor into `plugins/vendored/`. Plugin names:
-lowercase-hyphenated, ≤64 chars.
+- Allowed sources: `github`, `url`, `git-subdir`, and relative paths.
+- Disallowed sources: `npm`, `archive`, and `command`.
+- Private sources must be on github.com under the same owner as the marketplace,
+  or on a GHE host where the App is installed.
+- All other sources must be public. This includes GitLab and Bitbucket sources,
+  which are fetched anonymously.
+- For private code, use relative paths within the marketplace repository. Sync
+  packages the plugins, so members still need no repository access.
 
-## Install policy per plugin
+This repository already uses relative paths. For future SHA-pinned
+`vetted-external` entries, follow
+[README: Vetting public plugins](README.md#vetting-public-plugins): use a public
+or same-owner source, or vendor it under `plugins/vendored/`.
 
-| Level | Effect |
-|---|---|
-| Required | Auto-installed, can't remove |
-| Installed by default | Auto-installed, can disable |
-| Available for install | Self-service catalog |
-| Not available | Hidden |
+Plugin names must be lowercase, hyphenated, and no longer than 64 characters.
 
-Enterprise: per-group overrides; a member in several groups gets the **most
-permissive** level. Suggested mapping for this repo:
+## Install policies
 
-- `core-set` → Required (org-wide)
-- `team-set` → Installed by default (that team's group)
-- individual plugins → Available for install (handpick flow)
-- `shared-*` → Not available (arrive as dependencies only)
+| Level | Behavior |
+| --- | --- |
+| **Required** | Auto-installed; cannot be removed |
+| **Installed by default** | Auto-installed; can be disabled |
+| **Available for install** | Listed for self-service installation |
+| **Not available** | Hidden |
+
+Enterprise plans support group overrides. Members in multiple groups receive
+the most permissive policy.
+
+Recommended mapping:
+
+- `core-set`: **Required** organization-wide
+- `team-set`: **Installed by default** for the relevant team group
+- Individual plugins: **Available for install** for handpicked installation
+- `shared-a`: **Not available** because it arrives as a dependency
+- `shared-b`: **Available for install** while testing handpicking; switch it to
+  **Not available** after adding it to a bundle
 
 ## Updates
 
-- Manual: **Update** button in admin settings.
-- Auto-sync (opt-in): triggers on a **version-bump PR merging to the default
-  branch** — not on direct pushes. This enforces the PR-based release flow the
-  vetting audit trail wants anyway.
-- Syncs validate plugins and land within ~30 min; members pick changes up next
-  session / plugin refresh.
+- **Manual:** Select **Update** in organization settings.
+- **Automatic, opt-in:** Merge a version-bump PR into the default branch.
+  Direct pushes do not trigger auto-sync.
+- Validation and sync complete within about 30 minutes. Members receive changes
+  in their next session or after refreshing plugins.
 
-## Documented gaps — verify before relying on this route
+## Verify before rollout
 
-Two behaviors of our setup change meaning on the org route, and the docs don't
-fully specify either. Both have cheap pilots.
+Two behaviors are not fully documented. Test them before relying on this route.
 
-### 1. Bundles × admin install levels
+### Pilot bundle dependencies and install policies
 
-**What's documented**: client-side dependency mechanics (auto-install at the
-same scope, transitive enable, disable blocked while a dependent is enabled);
-that dependencies resolve within the same marketplace; that org-managed plugins
-appear to users as managed and can't be edited locally.
+Documented client-side dependency behavior is clear:
 
-**What isn't**: whether an admin-driven install ("Required" / "Installed by
-default") triggers dependency resolution the same way `plugin install` does,
-and what wins when levels conflict with the graph — e.g. a Required `team-set`
-whose member is marked "Not available", or a member trying to disable `core-b`
-that a Required bundle needs.
+- Dependencies install at the same scope.
+- Dependencies enable transitively.
+- Dependencies resolve within the same marketplace.
+- A dependency cannot be disabled while an enabled plugin depends on it.
 
-**Pilot** (one group, ~15 min):
+The docs do not say whether admin-driven installs behave the same way or which
+policy wins when it conflicts with the dependency graph.
 
-1. Set `team-set` → "Installed by default" for a pilot group; members "Available".
-2. In a member session: `claude plugin list` — expect team-a/b/c **and** core-b
-   installed and enabled.
-3. `claude plugin disable core-b@acme` — expect refusal naming team-a.
-4. Flip `team-b` → "Not available" while it's in `team-set` — note which wins.
+Run this pilot with one group:
 
-**Decision tree**: if bundles behave → keep them, use levels only for the
-Required `core-set`. If not → on the org route, per-group "Installed by
-default" on individual plugins is the native equivalent of a bundle; keep
-bundles only for self-service users.
+1. Set `team-set` to **Installed by default** and its members to **Available for
+   install**.
+2. Run `claude plugin list`. Expect `team-a`, `team-b`, `team-c`, and `core-b` to
+   be installed and enabled.
+3. Run `claude plugin disable core-b@acme`. Expect a refusal identifying
+   `team-a` as a dependent.
+4. Set `team-b` to **Not available** while it remains in `team-set`; record which
+   policy wins.
 
-### 2. Version semantics shift from tags to merge-to-main
+If bundles work, keep the bundle-based mapping above: require `core-set` and
+apply each team policy to `team-set`, not its individual members. If not, mark
+individual plugins **Installed by default** per group and reserve bundles for
+self-service users.
 
-| | Self-service route | Org route |
-|---|---|---|
-| What users get | Resolved on their machine against `{plugin}--v{version}` git tags | Whatever the default branch held at sync time (packaged server-side) |
-| Release act | Pushing a tag | Merging a version-bump PR (auto-sync keys on exactly this) |
-| Role of `^1.0` constraints | Resolver — picks the highest matching tag | Safety net only — checked at load time; violation disables the dependent (`dependency-version-unsatisfied`) |
+### Version resolution
 
-Consequences:
+| | Self-service | Organization-managed |
+| --- | --- | --- |
+| **Distributed version** | User machines resolve `{plugin}--v{version}` Git tags. | The server packages the default branch at sync time. |
+| **Release trigger** | Push a tag. | Merge a version-bump PR. |
+| **`^1.0` constraints** | Select the highest matching tag. | Validated at load time; a mismatch disables the dependent with `dependency-version-unsatisfied`. |
 
-- **Merge-to-main becomes the release gate.** A plugin bump merged before its
-  dependents' constraints allow it ships broken on the next sync — and the
-  breakage surfaces in *members'* `/plugin` Errors tabs, not at admin sync time.
-  Add a CI check on `marketplace.json`/`plugin.json` PRs that verifies every
-  dependent's range still matches the bumped versions.
-- **Keep tagging anyway**: maintainers and any self-service installs still
-  resolve via tags, and tags mark the reviewed commits for the audit trail.
-- The version-bump-PR discipline auto-sync enforces is the same discipline the
-  vetting audit trail wants, so the two reinforce each other.
+Merging to the default branch becomes the organization-managed release gate. If
+a plugin version is merged before its dependents accept it, the next sync ships
+a broken dependency. The failure appears in members' `/plugin` **Errors** tabs,
+not during admin sync.
 
-## Org route vs MDM — use both
+For PRs that change `marketplace.json` or `plugin.json`, add a CI check that
+verifies every dependent accepts the versions being merged. Continue tagging
+releases for self-service resolution and the vetting audit trail.
 
-| | Org settings | Managed settings (MDM) |
-|---|---|---|
-| Solves | **Distribution** + install policy | **Restriction** (allowlist, no sideloading) |
-| Needs | Team/Enterprise + GitHub App | Device management |
-| User git access | Never (plugins packaged) | Needed for private sources |
-| Require a plugin per group | Yes | No (only crude `enabledPlugins`) |
-| Block other marketplaces | **No** | **Yes** (`strictKnownMarketplaces`) |
+## Organization settings and MDM
 
-Strongest setup: org settings for distribution/policy + thin MDM allowlist for
-enforcement (README → Vetting).
+These systems are complementary:
 
-## Checklist for this repo
+| | Organization settings | Managed settings (MDM) |
+| --- | --- | --- |
+| **Purpose** | Distribution and install policy | Allowlisting and blocking sideloading |
+| **Requires** | Team or Enterprise plan and GitHub App | Device management |
+| **User Git access** | Not required; plugins are packaged | Required for private sources |
+| **Require plugins by group** | Yes | No; only basic `enabledPlugins` support |
+| **Block other marketplaces** | No | Yes, with `strictKnownMarketplaces` |
 
-1. Push to the org's GitHub as **private/internal**; install the Claude GitHub App.
-2. Connect `owner/market-place-setup` in Organization settings → Plugins.
-3. Run the bundle pilot (gap #1 above) with one group before broad rollout.
-4. Set install levels (mapping above); add Enterprise group overrides per team.
-5. Enable auto-sync; release via version-bump PRs, with a CI constraint check (gap #2).
+Use organization settings for distribution and policy, plus a minimal MDM
+allowlist for enforcement. See
+[README: Vetting public plugins](README.md#vetting-public-plugins).
+
+## Rollout checklist
+
+1. Push this repository to the organization's GitHub as a private or internal
+   repository.
+2. Install the Claude GitHub App for the repository.
+3. Connect `owner/market-place-setup` in **Organization settings → Plugins**.
+4. Run the bundle pilot with one group.
+5. Apply the recommended policies and Enterprise group overrides.
+6. Add CI validation for dependent version constraints.
+7. Enable auto-sync and release through version-bump PRs.

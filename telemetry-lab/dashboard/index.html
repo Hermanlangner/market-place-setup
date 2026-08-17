@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Telemetry Lab</title>
+<style>
+  :root {
+    --bg: #14191c; --surface: #1c2428; --ink: #e4eae8; --muted: #95a6a8;
+    --line: #313e42; --know: #e8a845; --act: #55b8ad;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); margin: 0;
+    font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 24px 64px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 13px; margin: 0 0 24px;
+    font-family: ui-monospace, Menlo, monospace; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+  .card h2 { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 12px; font-family: ui-monospace, Menlo, monospace; }
+  .big { font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  td, th { text-align: left; padding: 5px 8px 5px 0; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums;
+    font-family: ui-monospace, Menlo, monospace; }
+  .know { color: var(--know); } .act { color: var(--act); }
+  .empty { color: var(--muted); font-size: 13px; font-style: italic; }
+  .raw { margin-top: 14px; }
+  details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+  .mono { font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="module">
+import React from "https://esm.sh/react@18";
+import { createRoot } from "https://esm.sh/react-dom@18/client";
+import htm from "https://esm.sh/htm@3";
+const html = htm.bind(React.createElement);
+const { useState, useEffect } = React;
+
+function parseProm(text) {
+  const rows = [];
+  for (const line of text.split("\n")) {
+    if (!line.startsWith("claude_code")) continue;
+    const m = line.match(/^([A-Za-z0-9_:]+)(?:\{(.*)\})?\s+([0-9.eE+-]+)\s*$/);
+    if (!m) continue;
+    const labels = {};
+    if (m[2]) for (const mm of m[2].matchAll(/([\w.]+)="((?:[^"\\]|\\.)*)"/g)) labels[mm[1]] = mm[2];
+    rows.push({ metric: m[1], labels, value: parseFloat(m[3]) });
+  }
+  return rows;
+}
+
+const sum = (rows) => rows.reduce((a, r) => a + r.value, 0);
+const groupBy = (rows, key) => {
+  const g = {};
+  for (const r of rows) {
+    const k = r.labels[key] || "(none)";
+    g[k] = (g[k] || 0) + r.value;
+  }
+  return Object.entries(g).sort((a, b) => b[1] - a[1]);
+};
+
+function Table({ head, rows, fmt }) {
+  if (!rows.length) return html`<p class="empty">no data yet</p>`;
+  return html`<table>
+    <thead><tr><th>${head}</th><th class="num">value</th></tr></thead>
+    <tbody>${rows.map(([k, v]) => html`<tr key=${k}><td>${k}</td><td class="num">${fmt(v)}</td></tr>`)}</tbody>
+  </table>`;
+}
+
+function App() {
+  const [rows, setRows] = useState([]);
+  const [err, setErr] = useState(null);
+  const [ts, setTs] = useState(null);
+
+  useEffect(() => {
+    const tick = () =>
+      fetch("/metrics")
+        .then((r) => r.text())
+        .then((t) => { setRows(parseProm(t)); setErr(null); setTs(new Date()); })
+        .catch((e) => setErr(String(e)));
+    tick();
+    const id = setInterval(tick, 5000);
+    return () => clearInterval(id);
+  }, []);
+
+  const cost = rows.filter((r) => r.metric.includes("cost_usage"));
+  const tokens = rows.filter((r) => r.metric.includes("token_usage"));
+  const sessions = rows.filter((r) => r.metric.includes("session_count"));
+  const loc = rows.filter((r) => r.metric.includes("lines_of_code"));
+  const usd = (v) => "$" + v.toFixed(4);
+  const n = (v) => v.toLocaleString();
+  const byMetric = {};
+  for (const r of rows) (byMetric[r.metric] ||= []).push(r);
+
+  return html`<div class="wrap">
+    <h1>Claude Telemetry Lab</h1>
+    <p class="sub">
+      ${err ? `collector unreachable: ${err}` :
+        ts ? `polling /metrics every 5s · last ${ts.toLocaleTimeString()} · ${rows.length} series` :
+        "loading…"}
+    </p>
+    <div class="grid">
+      <div class="card"><h2>Sessions</h2><div class="big">${n(sum(sessions))}</div></div>
+      <div class="card"><h2>Total cost</h2><div class="big">${usd(sum(cost))}</div></div>
+      <div class="card"><h2>Total tokens</h2><div class="big">${n(sum(tokens))}</div></div>
+      <div class="card"><h2>Lines of code</h2><div class="big">${n(sum(loc))}</div></div>
+      <div class="card"><h2 class="know">Cost by skill</h2><${Table} head="skill.name" rows=${groupBy(cost, "skill_name")} fmt=${usd} /></div>
+      <div class="card"><h2 class="know">Cost by agent</h2><${Table} head="agent.name" rows=${groupBy(cost, "agent_name")} fmt=${usd} /></div>
+      <div class="card"><h2 class="act">Tokens by type</h2><${Table} head="type" rows=${groupBy(tokens, "type")} fmt=${n} /></div>
+      <div class="card"><h2 class="act">Cost by model</h2><${Table} head="model" rows=${groupBy(cost, "model")} fmt=${usd} /></div>
+      <div class="card"><h2>Cost by user</h2><${Table} head="user.email" rows=${groupBy(cost, "user_email")} fmt=${usd} /></div>
+      <div class="card"><h2>Cost by plugin</h2><${Table} head="plugin.name" rows=${groupBy(cost, "plugin_name")} fmt=${usd} /></div>
+    </div>
+    <div class="raw card" style=${{ marginTop: "14px" }}>
+      <details>
+        <summary>all claude_code series (${rows.length})</summary>
+        <table>
+          <thead><tr><th>metric</th><th>labels</th><th class="num">value</th></tr></thead>
+          <tbody>${Object.entries(byMetric).flatMap(([m, rs]) =>
+            rs.slice(0, 50).map((r, i) => html`<tr key=${m + i}>
+              <td class="mono">${m}</td>
+              <td class="mono">${Object.entries(r.labels).filter(([k]) => !["session_id", "user_account_uuid", "user_id"].includes(k)).map(([k, v]) => `${k}=${v}`).join(" ")}</td>
+              <td class="num">${r.value}</td></tr>`))}
+          </tbody>
+        </table>
+      </details>
+    </div>
+  </div>`;
+}
+
+createRoot(document.getElementById("root")).render(html`<${App} />`);
+</script>
+</body>
+</html>
