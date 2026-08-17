@@ -1,5 +1,11 @@
 # Repo tasks — `mise tasks` to list, `mise run <task>` to run.
 
+# Per-user telemetry identity (placeholder slug = local username for now).
+# The rest of the telemetry env is project-scoped in .claude/settings.json;
+# this one is per-person, so it lives here where it can be templated.
+[env]
+OTEL_RESOURCE_ATTRIBUTES = "user.slug={{env.USER}}"
+
 [tasks.validate]
 description = "Validate marketplace + plugin manifests"
 run = "claude plugin validate ."

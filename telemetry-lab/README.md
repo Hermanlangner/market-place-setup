@@ -24,8 +24,15 @@ claude
   v
 otel-collector
   |-- metrics :8889 --> nginx :3000 --> React dashboard
+  |-- metrics :8889 --> prometheus :9090 (scrapes every 5s; the chosen backend)
   `-- events and traces --> collector stdout (`docker compose logs`)
 ```
+
+Sessions launched from this repository need **no environment variables**:
+`.claude/settings.json` carries the posture B env block and `mise.toml`
+supplies `OTEL_RESOURCE_ATTRIBUTES=user.slug=<username>`. Verified: a
+zero-export session landed in Prometheus with the `user_slug` label. Query it
+at `http://localhost:9090` (e.g. `claude_code_cost_usage_USD_total`).
 
 ## Start the stack
 

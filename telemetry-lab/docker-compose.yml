@@ -9,6 +9,15 @@ services:
       - "4318:4318"   # OTLP HTTP
       - "8889:8889"   # Prometheus-format metrics out
 
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - otel-collector
+
   dashboard:
     image: nginx:alpine
     volumes:
