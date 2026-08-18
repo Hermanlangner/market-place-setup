@@ -268,6 +268,14 @@ privacy postures, and the local test rig, see
 [telemetry-lab/](telemetry-lab/). Its commands are `mise run lab:up`,
 `mise run lab:ping`, and `mise run lab:trace`.
 
+## Automation
+
+Vendored third-party plugins auto-update via Renovate + vendir with
+skill-scanner in CI and human merge as the vetting gate; bots load their
+behavior from this marketplace (claude-code-action natively, headless CLI via
+seed dirs, Agent SDK via repo checkout — cloud routines are the one gap).
+Research-backed design: [docs/automation.md](docs/automation.md).
+
 ## Production checklist
 
 - Push to GitHub. Teammates run

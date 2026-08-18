@@ -1,0 +1,5 @@
+{
+  "name": "vendor-auditor",
+  "version": "1.0.0",
+  "description": "Bot skill: audits a vendored third-party plugin (or its update diff) for malicious content and returns a structured verdict. Used by the vendor-update CI pipeline; humans can run it too."
+}
