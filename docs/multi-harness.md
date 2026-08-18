@@ -1,7 +1,7 @@
 # Multi-harness distribution for OpenCode and Codex
 
 Claude Code remains first-class. Its marketplace, dependencies, bundles,
-sub agents, hooks, and vetting stay in Claude Code.
+sub agents, hooks, and vetting do not travel.
 
 The portable layer is a projection rather than a port because skills follow
 the open [Agent Skills standard](https://agentskills.io), which OpenCode and
@@ -63,13 +63,13 @@ opencode run "ping team-a"
 
 It replies `🏓 pong from team-a v1.1.0`.
 
-Codex is not installed on this machine, so it has not been tested locally. Its
-documentation specifies the same layout.
+Codex is not installed on this machine, so this layout is unverified there.
+Its documentation specifies the same layout.
 
 ## Portability rules
 
-- Default to skills. Use a sub agent or hook only for Claude-specific behavior;
-  neither leaves Claude Code.
+- Default to skills. Use a sub agent or hook only for Claude-specific
+  behavior. Neither leaves Claude Code.
 - Keep portable skill folders self-contained. Place scripts inside the skill
   folder and use relative paths. `${CLAUDE_PLUGIN_ROOT}` and sibling plugin
   directory references resolve only in Claude Code.
@@ -94,5 +94,6 @@ Remove an individual skill symlink:
 rm ~/.agents/skills/<name>
 ```
 
-The installed entries are symlinks. Remove each link created from this repo;
-do not delete `~/.agents/skills/`, which may contain skills from other sources.
+The installed entries are symlinks. Remove each link created from this repo.
+Do not delete `~/.agents/skills/`, which may contain skills from other
+sources.

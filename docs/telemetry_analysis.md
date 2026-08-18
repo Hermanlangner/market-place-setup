@@ -252,7 +252,7 @@ lists `status` and `skill` on the native
 `codex.skill.injected` counter. Official source at revision
 [`b5ea64a`](https://github.com/openai/codex/tree/b5ea64a203ce1b04629010d3ef0a0d18c3c870a9)
 also emits `invoke_type=explicit|implicit` and `status=ok|error`. A successful
-implicit injection emits `status=ok`; an explicit mention emits `error` when
+implicit injection emits `status=ok`. An explicit mention emits `error` when
 Codex does not inject the mentioned skill. See the pinned
 [skill telemetry implementation](https://github.com/openai/codex/blob/b5ea64a203ce1b04629010d3ef0a0d18c3c870a9/codex-rs/core/src/skills.rs#L36-L148).
 
@@ -359,9 +359,9 @@ the full instructions.
 
 The [documented plugin API](https://opencode.ai/docs/plugins/#events) provides
 `tool.execute.before` and `tool.execute.after`. Source verification shows that
-the runtime wraps registered built-in tools with both hooks. The after hook receives `tool`,
-`sessionID`, `callID`, `args`, and the successful result. A plugin can therefore
-count a successful skill load with the following filter:
+the runtime wraps registered built-in tools with both hooks. The after hook
+receives `tool`, `sessionID`, `callID`, `args`, and the successful result. A
+plugin can therefore count a successful skill load with the following filter:
 
 ```ts
 "tool.execute.after": async (input) => {
@@ -673,7 +673,7 @@ prompts invoke the expected skill and avoid adjacent skills.
 
 Track explicit and implicit invocation separately only where the client reports
 the distinction. Codex source reports `invoke_type`, but its public metric docs
-do not yet guarantee the field; validate it during upgrades. Use `tool_call`
+do not yet guarantee the field. Validate it during upgrades. Use `tool_call`
 for the documented OpenCode path. Do not infer trigger type from prompt text.
 
 ### Efficiency and cost

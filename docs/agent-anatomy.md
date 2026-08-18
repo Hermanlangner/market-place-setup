@@ -1,9 +1,9 @@
 # Anatomy of an agent
 
-Companion to the visual [`agent-anatomy.html`](agent-anatomy.html). Terms such as
-harness, agent, tool, skill, sub agent, orchestration, meta-harness, and Claude
-Code describe three views: what an agent contains, how agents scale within a
-session, and how whole sessions are managed from outside.
+Companion to the visual [`agent-anatomy.html`](agent-anatomy.html). Three
+figures place the terms harness, agent, tool, skill, sub agent, orchestration,
+meta-harness, and Claude Code: what one agent contains, how agents scale within
+a session, and how whole sessions are managed from outside.
 
 ## Figure 1: inside one agent
 
@@ -44,7 +44,8 @@ flowchart LR
 ```
 
 Each sub agent is another instance of figure 1 with a fresh, separate context.
-Intermediate work stays outside the main agent's context; only reports return.
+Intermediate work stays outside the main agent's context. Only reports
+return.
 Orchestration is the coordination pattern: which agents run, in what order, and
 how their results combine. It is not a separate component.
 
@@ -63,7 +64,7 @@ Model (Claude)
 ```
 
 Orchestration and meta-harnesses work at different boundaries. Orchestration
-spawns sub agents inside one session; a meta-harness drives whole sessions from
+spawns sub agents inside one session. A meta-harness drives whole sessions from
 outside. Tidewave spans both boundaries: it drives Claude Code and serves MCP
 tools into those sessions.
 
@@ -75,13 +76,13 @@ harness with Codex or OpenCode, only the portable `.agents/skills` layer follows
 
 ## Key distinctions
 
-- Skill vs tool: a skill tells the model how; a tool lets it act. Skills enter
+- Skill vs tool: a skill tells the model how. A tool lets it act. Skills enter
   the context, while tools are called from it.
-- Agent vs harness: the harness is the runtime; the agent is the running system,
+- Agent vs harness: the harness is the runtime. The agent is the running system,
   including the model.
 - Skill vs sub agent: both package expertise. A skill keeps work in the current
-  context; a sub agent works in a separate context and returns a conclusion.
-- Sub agent vs orchestration: a sub agent is one delegate; orchestration is the
+  context. A sub agent works in a separate context and returns a conclusion.
+- Sub agent vs orchestration: a sub agent is one delegate. Orchestration is the
   coordination pattern across delegates.
 
 ## Where this repo fits

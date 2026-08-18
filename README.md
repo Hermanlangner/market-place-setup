@@ -41,7 +41,7 @@ team-set  = team-a + team-b + team-c (bundle; core-b arrives transitively)
 medic-set = diagnose                 (bundle)
 ```
 
-Shared plugins are dependency-oriented. `shared-a` arrives transitively;
+Shared plugins are dependency-oriented. `shared-a` arrives transitively.
 `shared-b` starts unreferenced so you can test handpicking, then add it to a
 bundle in the central-management exercise below.
 
@@ -57,7 +57,7 @@ auto-update.
 Version constraints resolve against Git tags named `{plugin}--v{version}`, such
 as `core-b--v1.0.0`. This convention gives each plugin an independent version
 line in one repository. If no tag matches, the current copy installs and the
-constraint is checked at load time. This allows untagged local testing.
+constraint is checked at load time, which allows untagged local testing.
 
 ### Guardrails
 
@@ -175,14 +175,14 @@ Plugin sources (unlike marketplace sources) support exact-commit pins:
 ```
 
 The `sha` takes precedence over `ref`, so moving an upstream tag changes
-nothing. Re-vetting a release requires a PR that updates `ref` and `sha`; the PR
-history becomes the audit trail.
+nothing. Re-vetting a release requires a PR that updates `ref` and `sha`, and
+the PR history becomes the audit trail.
 
 Either vendor the code under `plugins/vendored/` for a relative path and full
 control, or use `strict: false` to expose only approved components, such as
 skills but not hooks. Focus reviews on hooks, MCP servers, and scripts because
-they execute code; skills are prompts. Cross-marketplace dependencies remain
-blocked unless `allowCrossMarketplaceDependenciesOn` names the other
+they execute code. Skills are only prompts. Cross-marketplace dependencies
+remain blocked unless `allowCrossMarketplaceDependenciesOn` names the other
 marketplace.
 
 ### Enforce with managed settings (MDM)
@@ -270,11 +270,12 @@ privacy postures, and the local test rig, see
 
 ## Automation
 
-Vendored third-party plugins auto-update via Renovate + vendir with
-skill-scanner in CI and human merge as the vetting gate; bots load their
-behavior from this marketplace (claude-code-action natively, headless CLI via
-seed dirs, Agent SDK via repo checkout — cloud routines are the one gap).
-Research-backed design: [docs/automation.md](docs/automation.md).
+Vendored third-party plugins auto-update through Renovate and vendir, with
+skill-scanner in CI and human merge as the vetting gate. Bots load their
+behavior from this marketplace: claude-code-action natively, the headless CLI
+through seed directories, and the Agent SDK through a repo checkout. Scheduled
+cloud routines are the one gap. Research-backed design:
+[docs/automation.md](docs/automation.md).
 
 ## Production checklist
 

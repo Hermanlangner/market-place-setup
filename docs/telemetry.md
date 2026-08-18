@@ -125,38 +125,38 @@ The environment block lives in the same managed-settings file as the
 marketplace allowlist. Treat it as organization policy: publish this guide,
 name the active posture, and state that prompts and responses remain redacted.
 
-## How far without managed settings: all the way, minus enforcement
+## Coverage without managed settings
 
-Managed settings are one of four places the telemetry env can live. Verified
-in this repo (Claude Code v2.1.233): a session launched with **zero telemetry
-variables in the shell** exported to the lab collector and landed in
-Prometheus with a per-user slug, configured entirely from repo-local files.
+Everything works without managed settings except enforcement. Managed settings
+are one of four places the telemetry env can live. Verified in this repo
+(Claude Code v2.1.233): a session launched with **zero telemetry variables in
+the shell** exported to the lab collector and landed in Prometheus with a
+per-user slug, configured entirely from repo-local files.
 
 | Scope | Mechanism | Covers | Good for |
 | --- | --- | --- | --- |
-| Project | `.claude/settings.json` `env` block, committed to a repo | Everyone working in that repo (after folder trust) | Team opt-in by PR — this repo does it; see [.claude/settings.json](../.claude/settings.json) |
-| Per-user in a repo | mise `[env]` (supports templating: `user.slug={{env.USER}}`) | mise-activated shells in that directory | The per-person slug, which can't live in shared project settings — see [mise.toml](../mise.toml) |
+| Project | `.claude/settings.json` `env` block, committed to a repo | Everyone working in that repo (after folder trust) | Team opt-in by PR. This repo does it: see [.claude/settings.json](../.claude/settings.json) |
+| Per-user in a repo | mise `[env]` (supports templating: `user.slug={{env.USER}}`) | mise-activated shells in that directory | The per-person slug, which can't live in shared project settings. See [mise.toml](../mise.toml) |
 | User | `~/.claude/settings.json` `env` block | One developer, all projects | Individual opt-in |
 | Managed | `managed-settings.json` via MDM | Every managed machine | Enforcement |
 
-What works without managed settings: the entire pipeline — posture B export,
-Prometheus, dashboards, plugin adoption by name, the slug dimension. Rollout
-becomes "merge this settings block into your repo," which pairs naturally with
-the marketplace (both are opt-in adoption artifacts).
+What works without managed settings is the entire pipeline: posture B export,
+Prometheus, dashboards, plugin adoption by name, and the slug dimension.
+Rollout becomes "merge this settings block into your repo," which pairs
+naturally with the marketplace, since both are opt-in adoption artifacts.
 
 What only managed settings add:
 
-- **Endpoint lock** — without it, a developer can redirect or disable the
-  export; telemetry is voluntary and best-effort.
-- **Coverage guarantees** — only opted-in repos/users report, so absence of
-  data means "not opted in," never "not using Claude Code." Fine for a pilot
-  and for adoption measurement of participating teams; wrong tool for
-  org-wide cost accounting.
-- **Posture consistency** — nothing stops a repo from setting its own flags.
+- **Endpoint lock.** Without it, a developer can redirect or disable the
+  export. Telemetry is voluntary and best-effort.
+- **Coverage guarantees.** Only opted-in repos and users report, so absence of
+  data means "not opted in," never "not using Claude Code." That is fine for a
+  pilot and for adoption measurement of participating teams, and the wrong
+  tool for org-wide cost accounting.
+- **Posture consistency.** Nothing stops a repo from setting its own flags.
 
-Practical read: run the pilot and early rollout entirely on project settings;
-reach for managed settings at step 3 only if coverage/enforcement is actually
-required by then.
+Run the pilot and early rollout entirely on project settings. Reach for managed
+settings at step 3 only if coverage or enforcement is required by then.
 
 **Identity note**: the slug is a placeholder (`$USER`) for now. `user.email`
 is attached automatically from auth regardless, so backend joins can migrate
@@ -179,9 +179,9 @@ Add this exact environment block to the `managed-settings.json` used for
 }
 ```
 
-`OTEL_LOG_TOOL_DETAILS=1` only earns its keep in posture C, where it supplies
-`skill_name` on trace spans. Attach this processor to the relevant collector
-pipelines before storage:
+`OTEL_LOG_TOOL_DETAILS=1` is worth setting only in posture C, where it
+supplies `skill_name` on trace spans. Attach this processor to the relevant
+collector pipelines before storage:
 
 ```yaml
 processors:
@@ -248,18 +248,19 @@ server-side install counter.
    alongside the marketplace allowlist, publish this guide internally with the
    posture named, and state what is never collected (prompts, responses).
 4. **Per-skill names, when actually asked for:** prefer shipping a small
-   metrics hook in the marketplace first — a `PostToolUse` hook on the Skill
+   metrics hook in the marketplace first: a `PostToolUse` hook on the Skill
    tool that emits `{skill, plugin, session.id}` counters to the same
    collector. It is stable (no beta), needs no `OTEL_LOG_TOOL_DETAILS`, and
-   dogfoods our own plugin system; it counts usage rather than cost. Adopt
+   exercises our own plugin system. It counts usage rather than cost. Adopt
    posture C (beta traces + detail flag + span stripping) only if per-skill
    *cost* by name becomes a real question the hook counters can't answer.
 
 Pinned decisions: the backend is **Prometheus** (running in the lab at
 `:9090`, scraping the collector), and the identity dimension is a
-**`user.slug`** resource attribute (placeholder = local username via mise
-templating; `user.email` still flows from auth as the migration path). Steps
-1–2 need no managed settings at all — see the scopes section below.
+**`user.slug`** resource attribute (placeholder: the local username through
+mise templating, with `user.email` still flowing from auth as the migration
+path). Steps 1 and 2 need no managed settings at all. See the scopes section
+below.
 
 ## Starter dashboard
 

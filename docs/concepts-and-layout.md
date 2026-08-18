@@ -25,7 +25,7 @@ shared assets, project scope in versioned `.claude/`, and user scope in personal
 ## Repository layout
 
 This repo shows each file-backed plugin concept. `team-a` is the live example.
-The other non-bundle plugins contain skills only; bundle plugins contain only
+The other non-bundle plugins contain skills only. Bundle plugins contain only
 their manifests.
 
 ```text
@@ -78,10 +78,10 @@ some-project/.claude/                      ← PROJECT scope: versioned with the
 
 ## Placement rules of thumb
 
-- Shared by two teams: use a plugin in this repo, distributed through the
+- Shared by two teams: a plugin in this repo, distributed through the
   marketplace.
-- Needed by one codebase: use that repo's `.claude/`.
-- Needed by one person: use `~/.claude/`.
+- Needed by one codebase: that repo's `.claude/`.
+- Needed by one person: `~/.claude/`.
 - A skill needs code: put the script in the plugin's `scripts/` and reference it
   with `${CLAUDE_PLUGIN_ROOT}/scripts/...`. Installed plugins are copied to the
   cache, so relative paths outside the plugin break.

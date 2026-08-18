@@ -61,7 +61,7 @@ claude
 This is the metrics path. The detail flag is present only to demonstrate that
 third-party metric names remain redacted with the flag enabled. Production
 postures A and B in the [main guide](../docs/telemetry.md#privacy-postures) do
-not need it; posture C uses it for `skill_name` on trace spans.
+not need it. Posture C uses it for `skill_name` on trace spans.
 
 The dashboard shows sessions, total cost, tokens by type, lines of code, and
 cost by skill, agent, model, user, and plugin. Fire a skill such as
