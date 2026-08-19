@@ -1,7 +1,0 @@
-{
-  "name": "team-a",
-  "version": "1.1.0",
-  "description": "Team A plugin. Carries one example of every component type: skill, sub agent, hook, script. Depends on core-b (^1.0).",
-  "dependencies": [{ "name": "core-b", "version": "^1.0" }],
-  "hooks": "./hooks/hooks.json"
-}

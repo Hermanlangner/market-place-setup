@@ -1,0 +1,1 @@
+{ "name": "core-basics", "version": "1.0.0", "description": "The baseline every install gets. Depends on shared-kit, which is how the transitive chain starts.", "dependencies": ["shared-kit"] }

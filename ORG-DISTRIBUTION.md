@@ -39,7 +39,7 @@ repositories exposed to the installed GitHub App.
 
 This repository already uses relative paths. For future SHA-pinned
 `vetted-external` entries, follow
-[README: Vetting public plugins](README.md#vetting-public-plugins): use a public
+[plugin-vetting](docs/objectives/plugin-vetting.md): use a public
 or same-owner source, or vendor it under `plugins/vendored/`.
 
 Plugin names must be lowercase, hyphenated, and no longer than 64 characters.
@@ -62,7 +62,7 @@ Recommended mapping:
 - `team-set`: **Installed by default** for the relevant team group
 - Individual plugins: **Available for install** for handpicked installation
 - `shared-a`: **Not available** because it arrives as a dependency
-- `shared-b`: **Available for install** while testing handpicking; switch it to
+- `shared-b`: **Available for install** while testing handpicking. Switch it to
   **Not available** after adding it to a bundle
 
 ## Updates
@@ -79,7 +79,7 @@ Two behaviors are not fully documented. Test them before relying on this route.
 
 ### Pilot bundle dependencies and install policies
 
-Documented client-side dependency behavior is clear:
+Client-side dependency behavior is documented:
 
 - Dependencies install at the same scope.
 - Dependencies enable transitively.
@@ -97,8 +97,8 @@ Run this pilot with one group:
    be installed and enabled.
 3. Run `claude plugin disable core-b@acme`. Expect a refusal identifying
    `team-a` as a dependent.
-4. Set `team-b` to **Not available** while it remains in `team-set`; record which
-   policy wins.
+4. Set `team-b` to **Not available** while it remains in `team-set`. Record
+   which policy wins.
 
 If bundles work, keep the bundle-based mapping above: require `core-set` and
 apply each team policy to `team-set`, not its individual members. If not, mark
@@ -136,7 +136,7 @@ These systems are complementary:
 
 Use organization settings for distribution and policy, plus a minimal MDM
 allowlist for enforcement. See
-[README: Vetting public plugins](README.md#vetting-public-plugins).
+[plugin-vetting](docs/objectives/plugin-vetting.md).
 
 ## Rollout checklist
 

@@ -1,0 +1,1 @@
+{ "name": "shared-kit", "version": "1.0.0", "description": "Shared kit: the single copy of the demo scripts (banner, dice) and the skills that call them. Teams reach it transitively through core-basics." }

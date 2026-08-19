@@ -1,5 +1,0 @@
-{
-  "name": "shared-b",
-  "version": "1.0.0",
-  "description": "Shared library B. Nothing depends on it yet - install it directly to test handpicking from the shared category."
-}

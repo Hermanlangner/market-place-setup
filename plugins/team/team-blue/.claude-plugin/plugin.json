@@ -1,0 +1,6 @@
+{
+  "name": "team-blue",
+  "version": "1.0.0",
+  "description": "Team blue plugin. Carries one example of every component type: skill, sub agent, hook, script. Depends on core-basics (^1.0).",
+  "dependencies": [{ "name": "core-basics", "version": "^1.0" }]
+}

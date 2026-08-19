@@ -55,25 +55,25 @@ env = { CLAUDE_CODE_ENABLE_TELEMETRY = "1", OTEL_METRICS_EXPORTER = "otlp", OTEL
 run = "claude"
 
 [tasks."lab:ping"]
-description = "One-shot: install team-a, fire its ping skill, show skill-attributed metrics"
+description = "One-shot: install team-blue, fire its standup skill, show skill-attributed metrics"
 env = { CLAUDE_CODE_ENABLE_TELEMETRY = "1", OTEL_METRICS_EXPORTER = "otlp", OTEL_EXPORTER_OTLP_PROTOCOL = "grpc", OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:4317", OTEL_LOG_TOOL_DETAILS = "1", OTEL_METRIC_EXPORT_INTERVAL = "3000" }
 run = """
 claude plugin marketplace add ./ >/dev/null 2>&1 || true
-claude plugin install team-a@acme >/dev/null 2>&1 || true
-claude -p "ping team-a"
+claude plugin install team-blue@acme >/dev/null 2>&1 || true
+claude -p "standup"
 sleep 6
 echo "--- skill-attributed series (skill_name=\\"third-party\\" is expected: metrics bucket third-party names; see lab:trace for verbatim) ---"
 curl -s localhost:3000/metrics | grep -o 'skill_name="[^"]*"' | sort | uniq -c
 """
 
 [tasks."lab:trace"]
-description = "Fire the ping skill with the tracing beta — verbatim skill_name on tool spans"
+description = "Fire the standup skill with the tracing beta — verbatim skill_name on tool spans"
 env = { CLAUDE_CODE_ENABLE_TELEMETRY = "1", CLAUDE_CODE_ENHANCED_TELEMETRY_BETA = "1", OTEL_METRICS_EXPORTER = "otlp", OTEL_TRACES_EXPORTER = "otlp", OTEL_EXPORTER_OTLP_PROTOCOL = "grpc", OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:4317", OTEL_LOG_TOOL_DETAILS = "1", OTEL_TRACES_EXPORT_INTERVAL = "2000" }
 run = """
 claude plugin marketplace add ./ >/dev/null 2>&1 || true
-claude plugin install team-a@acme >/dev/null 2>&1 || true
-claude -p "ping team-a"
+claude plugin install team-blue@acme >/dev/null 2>&1 || true
+claude -p "standup"
 sleep 6
-echo "--- tool spans (expect tool_name=Skill skill_name=team-a:ping) ---"
+echo "--- tool spans (expect tool_name=Skill skill_name=team-blue:standup) ---"
 docker logs telemetry-lab-otel-collector-1 --since 2m 2>&1 | grep 'span.type=tool ' | tail -3
 """

@@ -1,106 +1,16 @@
 {
   "name": "acme",
-  "owner": {
-    "name": "Acme"
-  },
-  "description": "Single-marketplace test bed: team sets as bundle plugins, handpicking via categories, cross-plugin dependencies.",
+  "owner": { "name": "Acme" },
+  "description": "One marketplace for a whole org: a core everyone gets, team bundles, shared scripts without copies, and a vetted outsider.",
   "plugins": [
-    {
-      "name": "shared-a",
-      "source": "./plugins/shared/shared-a",
-      "category": "shared",
-      "tags": [
-        "shared",
-        "library"
-      ]
-    },
-    {
-      "name": "shared-b",
-      "source": "./plugins/shared/shared-b",
-      "category": "shared",
-      "tags": [
-        "shared",
-        "library"
-      ]
-    },
-    {
-      "name": "core-a",
-      "source": "./plugins/core/core-a",
-      "category": "core",
-      "tags": [
-        "core"
-      ]
-    },
-    {
-      "name": "core-b",
-      "source": "./plugins/core/core-b",
-      "category": "core",
-      "tags": [
-        "core"
-      ]
-    },
-    {
-      "name": "team-a",
-      "source": "./plugins/team/team-a",
-      "category": "team",
-      "tags": [
-        "team",
-        "team-a"
-      ]
-    },
-    {
-      "name": "team-b",
-      "source": "./plugins/team/team-b",
-      "category": "team",
-      "tags": [
-        "team",
-        "team-b"
-      ]
-    },
-    {
-      "name": "team-c",
-      "source": "./plugins/team/team-c",
-      "category": "team",
-      "tags": [
-        "team",
-        "team-c"
-      ]
-    },
-    {
-      "name": "diagnose",
-      "source": "./plugins/medic/diagnose",
-      "category": "medic",
-      "tags": [
-        "medic",
-        "diagnostics"
-      ]
-    },
-    {
-      "name": "core-set",
-      "source": "./plugins/bundles/core-set",
-      "category": "core",
-      "tags": [
-        "bundle",
-        "core"
-      ]
-    },
-    {
-      "name": "team-set",
-      "source": "./plugins/bundles/team-set",
-      "category": "team",
-      "tags": [
-        "bundle",
-        "team"
-      ]
-    },
-    {
-      "name": "medic-set",
-      "source": "./plugins/bundles/medic-set",
-      "category": "medic",
-      "tags": [
-        "bundle",
-        "medic"
-      ]
-    }
+    { "name": "shared-kit",   "source": "./plugins/shared/shared-kit",     "category": "shared",   "tags": ["shared", "scripts"] },
+    { "name": "core-basics",  "source": "./plugins/core/core-basics",      "category": "core",     "tags": ["core"] },
+    { "name": "team-blue",    "source": "./plugins/team/team-blue",        "category": "team",     "tags": ["team", "blue"] },
+    { "name": "team-green",   "source": "./plugins/team/team-green",       "category": "team",     "tags": ["team", "green"] },
+    { "name": "scout",        "source": "./plugins/agents/scout",          "category": "agents",   "tags": ["agent", "standalone"] },
+    { "name": "party-parrot", "source": "./plugins/vendored/party-parrot", "category": "vendored", "tags": ["external", "vetted"] },
+    { "name": "core-set",     "source": "./plugins/bundles/core-set",      "category": "core",     "tags": ["bundle", "core"] },
+    { "name": "blue-set",     "source": "./plugins/bundles/blue-set",      "category": "team",     "tags": ["bundle", "team", "blue"] },
+    { "name": "green-set",    "source": "./plugins/bundles/green-set",     "category": "team",     "tags": ["bundle", "team", "green"] }
   ]
 }

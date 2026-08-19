@@ -1,6 +1,6 @@
 {
   "name": "core-set",
   "version": "1.0.0",
-  "description": "Bundle: the managed core set. Installs core-a and core-b; shared-a arrives transitively via core-a.",
-  "dependencies": ["core-a", "core-b"]
+  "description": "Bundle: the baseline everyone gets. Installs core-basics; shared-kit arrives transitively.",
+  "dependencies": ["core-basics"]
 }

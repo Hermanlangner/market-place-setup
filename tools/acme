@@ -1,0 +1,123 @@
+#!/usr/bin/env python3
+"""Repo tool for the acme marketplace. Not listed in the catalog it prints.
+
+Usage:
+  tools/acme [catalog]
+
+The catalog command reads .claude-plugin/marketplace.json plus each entry's
+plugin.json and prints an aligned table with columns PLUGIN, VERSION,
+CATEGORY, TAGS, BUNDLE.
+"""
+
+import json
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+MARKETPLACE = REPO_ROOT / ".claude-plugin" / "marketplace.json"
+
+
+def dep_name(dep):
+    """A dependency entry is either a string or an object with a name key."""
+    if isinstance(dep, str):
+        return dep
+    if isinstance(dep, dict):
+        return dep.get("name", "")
+    return ""
+
+
+def load_manifest(source):
+    """Read a plugin's plugin.json; return {} when the dir or file is missing."""
+    manifest = REPO_ROOT / source / ".claude-plugin" / "plugin.json"
+    try:
+        with open(manifest) as fh:
+            return json.load(fh)
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def bundle_column(name, entries, manifests):
+    """Apply the BUNDLE column rules from the contract.
+
+    Bundles themselves show (bundle). A plugin directly listed in a bundle's
+    dependencies shows that bundle's name. A plugin reached only transitively
+    shows (via <direct-parent>). Otherwise (none).
+    """
+    bundles = [e["name"] for e in entries if "bundle" in e.get("tags", [])]
+
+    if name in bundles:
+        return "(bundle)"
+
+    direct = [
+        b for b in bundles
+        if name in [dep_name(d) for d in manifests.get(b, {}).get("dependencies", [])]
+    ]
+    if direct:
+        return ", ".join(direct)
+
+    # Walk each bundle's dependency tree; record the direct parent that
+    # pulls this plugin in.
+    parents = []
+    for b in bundles:
+        seen = set()
+        queue = [dep_name(d) for d in manifests.get(b, {}).get("dependencies", [])]
+        while queue:
+            current = queue.pop(0)
+            if current in seen:
+                continue
+            seen.add(current)
+            for dep in manifests.get(current, {}).get("dependencies", []):
+                child = dep_name(dep)
+                if child == name and current not in parents:
+                    parents.append(current)
+                queue.append(child)
+    if parents:
+        return "(via {})".format(", ".join(parents))
+
+    return "(none)"
+
+
+def catalog():
+    try:
+        with open(MARKETPLACE) as fh:
+            market = json.load(fh)
+    except (OSError, json.JSONDecodeError) as err:
+        print(f"error: cannot read {MARKETPLACE}: {err}", file=sys.stderr)
+        return 1
+
+    entries = market.get("plugins", [])
+    manifests = {e["name"]: load_manifest(e.get("source", "")) for e in entries}
+
+    rows = []
+    for entry in entries:
+        name = entry["name"]
+        manifest = manifests.get(name, {})
+        rows.append([
+            name,
+            manifest.get("version", "?"),
+            entry.get("category", ""),
+            ",".join(entry.get("tags", [])),
+            bundle_column(name, entries, manifests),
+        ])
+
+    header = ["PLUGIN", "VERSION", "CATEGORY", "TAGS", "BUNDLE"]
+    widths = [
+        max(len(header[i]), *(len(r[i]) for r in rows)) if rows else len(header[i])
+        for i in range(len(header))
+    ]
+    for row in [header] + rows:
+        print("  ".join(cell.ljust(widths[i]) for i, cell in enumerate(row)).rstrip())
+    return 0
+
+
+def main(argv):
+    command = argv[1] if len(argv) > 1 else "catalog"
+    if command == "catalog":
+        return catalog()
+    print(f"error: unknown command '{command}'", file=sys.stderr)
+    print("usage: tools/acme [catalog]", file=sys.stderr)
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

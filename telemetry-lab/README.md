@@ -1,7 +1,7 @@
 # Telemetry lab
 
 This local stack exercises the paths described in
-[the telemetry guide](../docs/telemetry.md). An OTel Collector receives Claude
+[adoption measurement](../docs/objectives/adoption-measurement.md). An OTel Collector receives Claude
 Code's OTLP export, re-exposes metrics as Prometheus text, and sends events and
 traces to collector stdout. A no-build React dashboard renders the metrics.
 
@@ -60,8 +60,8 @@ claude
 
 This is the metrics path. The detail flag is present only to demonstrate that
 third-party metric names remain redacted with the flag enabled. Production
-postures A and B in the [main guide](../docs/telemetry.md#privacy-postures) do
-not need it; posture C uses it for `skill_name` on trace spans.
+postures A and B in the [telemetry configuration](../docs/resources/telemetry-configuration.md#the-three-postures) do
+not need it. Posture C uses it for `skill_name` on trace spans.
 
 The dashboard shows sessions, total cost, tokens by type, lines of code, and
 cost by skill, agent, model, user, and plugin. Fire a skill such as
@@ -76,7 +76,7 @@ regardless of `OTEL_LOG_TOOL_DETAILS`.
 | Plugin events | Add `OTEL_LOGS_EXPORTER=otlp`, then run `docker compose logs -f otel-collector` | `plugin_loaded` includes the verbatim plugin name |
 | Beta traces | Run `mise run lab:trace` from the repository root | The existing traces pipeline prints `skill_name=team-a:ping` on a tool span |
 
-See [the verified v2.1.233 findings](../docs/telemetry.md#verified-name-behavior-in-claude-code-v21233)
+See [the verified v2.1.233 findings](../docs/investigations/skill-name-redaction.md#findings)
 for the full signal matrix.
 
 ## Use mise tasks

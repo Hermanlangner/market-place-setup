@@ -1,6 +1,0 @@
-{
-  "name": "medic-set",
-  "version": "1.0.0",
-  "description": "Bundle: the managed medic set. Installs diagnose.",
-  "dependencies": ["diagnose"]
-}

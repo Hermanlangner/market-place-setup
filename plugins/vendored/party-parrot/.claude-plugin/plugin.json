@@ -1,0 +1,1 @@
+{ "name": "party-parrot", "version": "1.0.0", "description": "Fake third-party plugin, vendored under plugins/vendored/ to demonstrate the vetting flow: reviewed once, re-listed here, fully controlled." }

@@ -1,0 +1,1 @@
+{ "name": "team-green", "version": "1.0.0", "description": "Team green plugin. Demonstrates orchestration: a race-director agent fans out to two runner sub agents. Depends on core-basics (^1.0).", "dependencies": [{ "name": "core-basics", "version": "^1.0" }] }
