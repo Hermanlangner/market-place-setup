@@ -256,7 +256,8 @@ opencode run "banner hello"
 Look for: OpenCode loading `shared-kit-banner`. Expect the skill, not the
 script marker: banner reaches its script through `${CLAUDE_PLUGIN_ROOT}`,
 which only Claude Code resolves, and the dist build ships skill folders
-without plugin scripts. docs/multi-harness.md draws this boundary.
+without plugin scripts. docs/objectives/skill-portability.md draws this
+boundary.
 
 Say: "The knowledge travels. The Claude-specific plumbing stays put, by
 design."

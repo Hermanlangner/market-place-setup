@@ -14,7 +14,7 @@ follow it from memory, behave identically; the README's entry point uses
 the read-it route so nothing needs to be installed or registered before
 the tour. The file is still part of the tour: it lives in project scope
 (`.claude/skills/`), one of the three scopes in
-docs/concepts-and-layout.md. Point that out when scopes come up.
+docs/resources/repository-layout.md. Point that out when scopes come up.
 
 ## Non-negotiable rules
 

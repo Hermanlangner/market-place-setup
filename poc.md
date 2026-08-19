@@ -194,8 +194,8 @@ Four verifications, one plugin, all visible in
 ### team-green: orchestration
 
 Green demonstrates that orchestration is behavior, not a file type
-(docs/concepts-and-layout.md already makes this argument; green makes it
-runnable). A `race-director` agent fans out to two runner sub agents and
+(docs/resources/repository-layout.md already makes this argument; green
+makes it runnable). A `race-director` agent fans out to two runner sub agents and
 combines their answers:
 
 ```mermaid
@@ -356,7 +356,8 @@ Skills remain the portable layer. `mise run dist:build` keeps projecting
 every `skills/` directory into `dist/agents/skills/` for OpenCode and
 Codex, and the new cast flows through it unchanged (the build is
 name-based, not content-based). Hooks, sub agents, bundles, and the catalog
-stay Claude-first, exactly as docs/multi-harness.md draws the boundary. The
+stay Claude-first, exactly as docs/objectives/skill-portability.md draws
+the boundary. The
 demo closes with `opencode run "banner hello"` if OpenCode is present, and
 skips it cleanly if not.
 
